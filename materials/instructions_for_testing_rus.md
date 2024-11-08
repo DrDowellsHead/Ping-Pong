@@ -10,8 +10,8 @@
   ```clang-format -n src/sourcefile_name.c``` 
 
   Необходимая версия clang-format: \
-  **Mac** 14.0.5 \
-  **Linux** 13.0.1
+  **Mac** 18.1.6 \
+  **Linux** 18.1.3
 
 
  * **Статический анализ кода.** Иногда (или не совсем иногда) встречается такое, что 
@@ -27,5 +27,5 @@
    ```cppcheck --enable=all --suppress=missingIncludeSystem src/```
     
    Необходимая версия cppcheck: \
-   **Mac** 2.8 \
-   **Linux** 2.8
+   **Mac** 2.13 \
+   **Linux** 2.13
