@@ -11,6 +11,6 @@ Dasturning to‘g‘ri ma‘lumot qaytarishidan tashqari avtotest siz tuzgan das
   ```clang-format -n src/sourcefile_name.c```
   
   clang-format kerakli versiyasi: \
-  **Linux** 18.1.3
+  **Linux** 18.1.8
   
   Google Style: https://google.github.io/styleguide/cppguide.html

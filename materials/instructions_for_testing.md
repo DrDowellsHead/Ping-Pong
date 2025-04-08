@@ -19,8 +19,8 @@ check your program and its source code for the following points:
   ```sudo apt install clang-format```
 
   Required version of clang-format: \
-  **Mac** 18.1.6 \
-  **Linux** 18.1.3
+  **Mac** 18.1.8 \
+  **Linux** 18.1.8
 
 
  * **Static code analysis.** Sometimes (or not quite sometimes) it happens that
