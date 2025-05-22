@@ -1,7 +1,9 @@
 # Instructions for running tests.
 
-In addition to testing for correct output data, the autotest system will
-check your program and its source code for the following points:
+In addition to testing for correct output, the automated testing system will
+check your program and its source code. To successfully pass the test, you must
+make sure that your program meets the requirements below. To do this,
+run the commands below locally and make sure that they do not output any errors.
 
 * **Style tests.** To check how much the beauty of your code matches
   for example, you can test your code using the _clang-format_ utility.
@@ -36,6 +38,6 @@ check your program and its source code for the following points:
    ```cppcheck --enable=all --suppress=missingIncludeSystem src/```
 
    Required version of cppcheck: \
-   **Mac** 2.8 \
-   **Linux** 2.8
+   **Mac** 2.13 \
+   **Linux** 2.13
    

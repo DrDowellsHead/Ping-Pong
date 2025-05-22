@@ -1,6 +1,9 @@
 # Test uchun ko‘rsatmalar. 
 
-Dasturning to‘g‘ri ma‘lumot qaytarishidan tashqari avtotest siz tuzgan dastur kodini keyingi punktlar bo‘yicha tekshirib o‘tadi: 
+To'g'ri chiqish ma'lumotlarini sinovdan o'tkazishdan tashqari, avtotest tizimi ham shunday qiladi
+dasturingizni va uning manba kodini tekshiring. Sinovdan muvaffaqiyatli o'tish uchun siz kerak
+dasturingiz quyidagi talablarga javob berishiga ishonch hosil qiling. Buning uchun
+Quyidagi buyruqlarni mahalliy sifatida ishga tushiring va ular hech qanday xato chiqmasligiga ishonch hosil qiling.
 
 * **Code style.** Siz yozgan chiroyli kod standartga qanchalik mos kelishini tekshirish uchun _clang-format_ utilitidan foydalanishingiz mumkin. 
   ```materials/linters``` papkasida ```.clang-format``` fayli bor, unda stil uchun kerakli sozlamalar mavjud. 

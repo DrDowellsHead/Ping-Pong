@@ -65,6 +65,8 @@ so far and the standard library.***
 
 ***Space Bar - to skip an action at a certain step of the game in step-by-step mode.***
 
+***After starting the program, it goes to wait for correct input, i.e. one of the players must move their rocket, or miss a move. After that, drawing occurs, and the program goes back to waiting for input. And so the game continues until the game is finished.***
+
 * ***Graphics***
 
 ***The field is a 80 x 25-symbol rectangle.*** 
@@ -79,8 +81,7 @@ so far and the standard library.***
 
 ## Bonus Part:
 
-***== Quest received. You need to implement interactive version of the PONG (real-time game mode). Additional 
-libraries can be used to simplify the processing of the players' actions and displaying symbolic graphics. The interactive mode code must be in the src/pong_interactive.c file. To implement the bonus part, you must implement the base part first. ==***
+***== Quest received. You need to implement interactive version of the PONG (real-time game mode). To simplify the processing of player actions and display of character graphics, the `ncurses` library can be used, but the limitations of the main part also apply to the bonus part. The interactive mode code must be in the src/pong_interactive.c file. To implement the bonus part, you must implement the base part first. ==***
 
 ## Important notes:
 
@@ -92,7 +93,13 @@ libraries can be used to simplify the processing of the players' actions and dis
   
 * We also recommend taking a look at the `code-samples` folder.
 
-* It is forbidden to use dynamic memory
+* It is forbidden to use dynamic memory.
+
+* It is forbidden to use pointers.
+
+* Only standard libraries can be used. Exception: `ncurses` in the bonus section.
+
+* It is forbidden to use arrays
 
 > When developing the game, follow 
 the principles of structured programming of E. Dijkstra.

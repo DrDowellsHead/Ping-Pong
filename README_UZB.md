@@ -61,6 +61,8 @@ Haqiqatan ham, shu zahotiyoq burchakda ilgari yo’qdek tuyulgan printer g’ong
 
 ***Bosqichma-bosqichlik rejimida o'yinning keyingi bosqichida harakatni o'tkazish uchun Space Bar.***
 
+***Ishga tushgandan so'ng, dastur to'g'ri kiritishni kutishni davom ettiradi, ya'ni o'yinchilardan biri raketasini harakatga keltirishi yoki burilishni o'tkazib yuborishi kerak. Shundan so'ng, rasm chiziladi va dastur yana kiritishni kutishga o'tadi. Shunday qilib, o'yin tugaguniga qadar o'yin davom etadi.***
+
 * ***Grafika***
 
 ***Maydon – 80 ga 25 belgidan iborat to'rtburchak.***
@@ -73,7 +75,7 @@ Haqiqatan ham, shu zahotiyoq burchakda ilgari yo’qdek tuyulgan printer g’ong
 
 ## Bonusli qism
 
-***== Quest qabul qilindi. O'yinchilar harakatlarini qayta ishlashni va belgili grafiklarni aks ettirishni soddalashtirish uchun qo'shimcha kutubxonalardan foydalangan holda Pongni interaktiv rejimda (real vaqtdagi o'yin rejimi) amalga oshirish kerak. Interaktiv rejim kodi src/pong\_interactive.c faylida bo'lishi kerak. Bonus qismini amalga oshirish uchun birinchi navbatda asosiy qismni amalga oshirish kerak. ==*** 
+***== Quest qabul qilindi. Pong interaktiv rejimda (real vaqtda o'yin rejimi) amalga oshirilishi kerak.O'yinchi harakatlarini qayta ishlash va belgilar grafikasini ko'rsatishni soddalashtirish uchun "ncurses" kutubxonasidan foydalanish mumkin, ammo asosiy qismning cheklovlari bonus qismiga ham tegishli. Interaktiv rejim kodi src/pong\_interactive.c faylida bo'lishi kerak. Bonus qismini amalga oshirish uchun birinchi navbatda asosiy qismni amalga oshirish kerak. ==*** 
 
 ## Muhim eslatmalar
 
@@ -86,6 +88,8 @@ Haqiqatan ham, shu zahotiyoq burchakda ilgari yo’qdek tuyulgan printer g’ong
 * Shuningdek, `code-samples` papkasiga qarashni tavsiya qilamiz
 
 * Dinamik xotiradan foydalanish taqiqlanadi.
+
+* Massivlardan foydalanish taqiqlanadi
 
 > O'yinni ishlab chiqishda E. Deykstra strukturi dasturlash tamoyillariga to'liq amal qiling. 
 
