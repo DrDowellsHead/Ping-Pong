@@ -57,3 +57,7 @@ dkms.conf
 .Trashes
 ehthumbs.db
 Thumbs.db
+
+
+# develop
+.clang-format
