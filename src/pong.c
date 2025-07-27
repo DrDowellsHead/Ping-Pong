@@ -4,7 +4,7 @@ void display(int lRacketY, int rRacketY, int ballX, int ballY, int lScore, int r
 int collision(int lRacketY, int rRacketY, int ballX, int ballY, int direction);
 
 int main() {
-    int lScore, rScore = 0;
+    int lScore =0, rScore = 0;
     int lRacketY = 13;  // start possition of left racket
     int rRacketY = 13;  // start possition of right racket
     int ballX = 4;      // start possition of ball
@@ -91,6 +91,38 @@ int main() {
     return 0;
 }
 
-void display(int lRacketY, int rRacketY, int ballX, int ballY, int lScore, int rScore) {}
+void display (int lRacketY,int rRacketY, int ballX, int ballY, int lScore, int rScore) {
+    for (int y = 0; y<25; y++){
+        for (int x = 0; x<110; x++){
+            if (x < 80){
+                if (y==0||y==24) {
+                    printf("#"); 
+                } 
+                else {
+                    if (x==0 || x==79){
+                        printf("#");
+                    } 
+                    else if ((x == 2 || x == 76) && (y == rRacketY || y == rRacketY-1 || y == rRacketY+1 || y == lRacketY || y == lRacketY-1 || y == lRacketY+1)) {
+                            printf("|");
+                            continue;
+                    }
+                    else if (ballX == x && ballY == y) {
+                        printf("*");
+                        continue;
+                    }
+                        printf(" ");
+                }
+            }
+            if (x == 109 && y == 4){
+                printf("\t      SCORE");
+            }
+            if (x == 109 && y == 5){
+                printf("\t|Left %d | Right %d|", lScore, rScore);
+            }
+        }
+    printf("\n");
+    };
+}
 
-int collision(int lRacketY, int rRacketY, int ballX, int ballY, int direction) { return 0; }
+
+// int collision(int lRacketY, int rRacketY, int ballX, int ballY, int direction) { return 0; }
