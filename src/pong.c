@@ -4,16 +4,18 @@
 #define WIDTH 80
 
 void display(int lRacketY, int rRacketY, int ballX, int ballY, int lScore, int rScore);
-int collision(int lRacketY, int rRacketY, int ballX, int ballY, int direction);
+int collision(int lRacketY, int rRacketY, int ballX, int ballY);
 
 int main() {
     int lScore =0, rScore = 0;
     int lRacketY = 13;  // start possition of left racket
     int rRacketY = 13;  // start possition of right racket
-    int ballX = 4;      // start possition of ball
+    int ballX = 3;      // start possition of ball
     int ballY = 13;     // start possition of ball
     int player = 1;     // left player starts "1" - left|| "-1" - right
     int serve = 1;      // подача
+    int velX = 1;
+    int velY = 1;
 
     while (lScore < 21 && rScore < 21) {
         display(lRacketY, rRacketY, ballX, ballY, lScore, rScore);
@@ -24,22 +26,22 @@ int main() {
 
         switch (command) {
             case 'A':
-                if (lRacketY >= 2) {
+                if (lRacketY >= 3) {
                     lRacketY--;
                 }
                 break;
             case 'Z':
-                if (lRacketY <= 23) {
+                if (lRacketY <= 22) {
                     rRacketY++;
                 }
                 break;
             case 'K':
-                if (rRacketY >= 2) {
+                if (rRacketY >= 3) {
                     rRacketY--;
                 }
                 break;
             case 'M':
-                if (rRacketY <= 23) {
+                if (rRacketY <= 22) {
                     rRacketY++;
                 }
                 break;
@@ -50,60 +52,65 @@ int main() {
                 break;
         }
 
-        int direction = collision(lRacketY, rRacketY, ballX, ballY, direction);
-
-        switch (direction) {
-            case 1:
-                ballX++;
-                ballY++;
-                break;
-            case 2:
-                ballX++;
-                ballY--;
-                break;
-            case 3:
-                ballX--;
-                ballY--;
-                break;
-            case 4:
-                ballX--;
-                ballY++;
-                break;
-            case 5:
-                break;
-            case 6:
-                lScore++;
-                serve++;
-                lRacketY = rRacketY = ballY = 13;
-                // передача подачи
-                if (serve == 3) {
-                    player = -player;
-                    serve = 1;
-                }
-                if (player == 1) {
-                    ballX = 4;
-                } else {
-                    ballX = 76;
-                }
-
-                break;
-            case 7:
-                rScore++;
-                serve++;
-                lRacketY = rRacketY = ballY = 13;
-                // передача подачи
-                if (serve == 3) {
-                    player = -player;
-                    serve = 1;
-                }
-                if (player == 1) {
-                    ballX = 4;
-                } else {
-                    ballX = 76;
-                }
-                break;
+        int col = collision(lRacketY, rRacketY, ballX, ballY);
+        switch (col)
+        {
+        case 0:
+            ballX += velX;
+            ballY += velY;
+            break;
+        case 1: // left
+            velX = 1;
+            ballX += velX;
+            ballY += velY;
+            break;
+        case 2: // top
+            velY = 1;
+            ballX += velX;
+            ballY += velY;
+            break;
+        case 3: // right
+            velX = -1;
+            ballX += velX;
+            ballY += velY;
+            break;
+        case 4: // bottom
+            velY = -1;
+            ballX += velX;
+            ballY += velY;
+            break;
+        case 5: //left center
+            velX = 1;
+            velY = 0;
+            ballX += velX;
+            ballY += velY;
+            break;
+        case 6: //right center
+            velX = -1;
+            velY = 0;
+            ballX += velX;
+            ballY += velY;
+            break;
+        case 7: // left win
+            lScore++;
+            lRacketY = 13;
+            rRacketY = 13;
+            ballX = 3;
+            ballY = 13;
+            printf("Left got round!!!!!!\n");
+            break;
+        case 8: //right win
+            rScore++;
+            lRacketY = 13;
+            rRacketY = 13;
+            ballX = 75;
+            ballY = 13;
+            printf("Right got round!!!!!!\n");
+            break;
+        default:
+            break;
         }
-    }
+        }
 
     if (lScore == 21) {
         // LEFT WIN
@@ -149,86 +156,37 @@ void display (int lRacketY,int rRacketY, int ballX, int ballY, int lScore, int r
     };
 }
 
-
-// int collision(int lRacketY, int rRacketY, int ballX, int ballY, int direction) { return 0; }
-int counter(int lScore, int rScore) {
-    int i = 0;
-    lScore = ++i;
-    return 0;
-}
-
-// в случае выхода левой границы выводи 6
-// в случае выхода правой границы выводи 7
-// в случае попадания в середину ракетки выводи 5
-// направление 1 - вверх-вправо
-// направление 2 - вниз-вправо
-// направление 3 - вниз-влево
-// направление 4 - вверх-влево
-int collision(int lRacketY,int rRacketY, int ballX, int ballY, int direction) {
-
-    // Удары о верхнюю/нижнюю границу
-    if (ballY <= 0) { // Удар о верхнюю границу
-        switch (direction) {
-            case 1: return 2; // Мяч летит вправо
-            break;
-            case 3: return 4; // Мяч летит влево
-            break;
-        default:
-            break;
-        }
+int collision(int lRacketY,int rRacketY, int ballX, int ballY) {
+    //left-racket 
+    if (ballX == 3 && (lRacketY + 1 == ballY || lRacketY - 1 == ballY)) {
+        return 1; // left coll
+    } else if (ballX == 3 && ballY == lRacketY)
+    {
+       return 5; // invert velX
     }
-
-    if (ballY == WIDTH - 1) { // Удар о нижнюю границу
-        switch (direction) {
-        case 2: return 1; // Мяч летит вправо
-            break;
-        case 3: return 4; // Мяч летит влево
-            break;
-        }
+    // riht-racket
+    if (ballX == 75 && (rRacketY + 1 == ballY || rRacketY - 1 == ballY)) {
+        return 3; // left coll
+    } else if (ballX == 75 && ballY == rRacketY)
+    {
+       return 6; // invert velX
+    }
+    // top
+    if (ballY == 1) {
+        return 2;
+    }
+    // bottom
+    if (ballY == 23) {
+        return 4;
+    }
     
-    // Выход за правую границу
-    if (ballX == WIDTH - 2) { // Выход за правую границу
+    // left win
+    if (ballX <= 0) {
         return 7;
     }
-
-    // Выход за левую границу
-    if (ballX == 1) {
-        return 6;
+    // right win
+    if (ballX >= 78) {
+        return 8;
     }
-
-    // Удар о правую ракетку
-    if (ballY == rRacketY - 1) { // Касание по верхней границей
-        switch (direction) {
-        case 1: return 4; // Мяч летит вверх
-            break;
-        case 2: return 3; // Мяч летит вниз
-            break;
-        }
-    }
-
-    if (ballY == rRacketY || ballY == lRacketY) { // Касание по центру
-        switch (direction) {
-        return 5;
-            break;
-        }
-    }
-        
-    // Удар по левой ракетке
-    if (ballY == lRacketY - 1) { // Касание по верхней границей
-        switch (direction) {
-        case 4: return 1; // Мяч летит вверх
-            break;
-            case 3: return 2; // Мяч летит вниз
-            break;
-        }
-    }
-
-    if (ballY == lRacketY + 1) { // Касание по верхней границей
-        switch (direction) {
-        case 4: return 1; // Мяч летит вверх
-            break;
-        case 3: return 2; // Мяч летит вниз
-    }
-    return direction;
-    }
+    return 0;
 }

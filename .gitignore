@@ -63,3 +63,4 @@ Thumbs.db
 .clang-format
 *.out
 pong
+.vscode/
