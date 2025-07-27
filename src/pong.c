@@ -59,6 +59,9 @@ int main() {
                 break;
             case 1:  // left
                 velX = 1;
+                if (velY == 0) {
+                    velY = 1;
+                }
                 ballX += velX;
                 ballY += velY;
                 break;
@@ -69,6 +72,9 @@ int main() {
                 break;
             case 3:  // right
                 velX = -1;
+                if (velY == 0) {
+                    velY = -1;
+                }
                 ballX += velX;
                 ballY += velY;
                 break;
