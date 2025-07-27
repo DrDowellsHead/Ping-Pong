@@ -18,6 +18,7 @@ int main() {
     int velY = 1;
 
     while (lScore < 21 && rScore < 21) {
+        printf("\033[H\033[2J");
         display(lRacketY, rRacketY, ballX, ballY, lScore, rScore);
 
         char command = 0;
@@ -31,8 +32,8 @@ int main() {
                 }
                 break;
             case 'Z':
-                if (lRacketY <= 22) {
-                    rRacketY++;
+                if (lRacketY <= 21) {
+                    lRacketY++;
                 }
                 break;
             case 'K':
@@ -41,7 +42,7 @@ int main() {
                 }
                 break;
             case 'M':
-                if (rRacketY <= 22) {
+                if (rRacketY <= 21) {
                     rRacketY++;
                 }
                 break;
@@ -92,20 +93,18 @@ int main() {
             ballY += velY;
             break;
         case 7: // left win
-            lScore++;
+            rScore++;
             lRacketY = 13;
             rRacketY = 13;
             ballX = 3;
             ballY = 13;
-            printf("Left got round!!!!!!\n");
             break;
         case 8: //right win
-            rScore++;
+            lScore++;
             lRacketY = 13;
             rRacketY = 13;
             ballX = 75;
             ballY = 13;
-            printf("Right got round!!!!!!\n");
             break;
         default:
             break;
@@ -114,10 +113,10 @@ int main() {
 
     if (lScore == 21) {
         // LEFT WIN
-        printf("LEFT WIN");
+        printf("LEFT WIN\n");
     } else {
         // RIGHT WIN
-        printf("RIGHT WIN");
+        printf("RIGHT WIN\n");
     }
 
     return 0;
@@ -134,9 +133,10 @@ void display (int lRacketY,int rRacketY, int ballX, int ballY, int lScore, int r
                     if (x==0 || x==79){
                         printf("#");
                     } 
-                    else if ((x == 2 || x == 76) && (y == rRacketY || y == rRacketY-1 || y == rRacketY+1 || y == lRacketY || y == lRacketY-1 || y == lRacketY+1)) {
-                            printf("|");
-                            continue;
+                    else if (((x == 2) && (y == lRacketY || y == lRacketY - 1 || y == lRacketY + 1)) ^ ((x == 76) && (y == rRacketY || y == rRacketY - 1 || y == rRacketY + 1))){
+                        printf("|");
+                        continue;
+
                     }
                     else if (ballX == x && ballY == y) {
                         printf("*");
