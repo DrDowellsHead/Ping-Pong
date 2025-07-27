@@ -15,19 +15,34 @@ int main() {
     while (lScore < 21 && rScore < 21) {
         display(lRacketY, rRacketY, ballX, ballY, lScore, rScore);
 
-        char command = getchar();
+        char command = 0;
+        scanf("%c\n",&command);
+
         switch (command) {
             case 'A':
+                if (lRacketY >= 2) {
+                    lRacketY--;
+                }
                 break;
             case 'Z':
+                if (lRacketY <= 23) {
+                    rRacketY++;
+                }
                 break;
             case 'K':
+                if (rRacketY >= 2) {
+                    rRacketY--;
+                }
                 break;
             case 'M':
+                if (rRacketY <= 23) {
+                    rRacketY++;
+                }
                 break;
             case ' ':
                 break;
             default:
+                printf("Wrong command!!!\n");
                 break;
         }
 
@@ -35,13 +50,20 @@ int main() {
 
         switch (direction) {
             case 1:
-                /* code */
+                ballX++;
+                ballY++;
                 break;
             case 2:
+                ballX++;
+                ballY--;
                 break;
             case 3:
+                ballX--;
+                ballY--;
                 break;
             case 4:
+                ballX--;
+                ballY++;
                 break;
             case 5:
                 break;
@@ -75,7 +97,6 @@ int main() {
                 } else {
                     ballX = 76;
                 }
-
                 break;
         }
     }
