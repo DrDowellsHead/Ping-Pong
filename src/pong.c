@@ -25,21 +25,25 @@ int main() {
 
         switch (command) {
             case 'A':
+            case 'a':
                 if (lRacketY >= 3) {
                     lRacketY--;
                 }
                 break;
             case 'Z':
+            case 'z':
                 if (lRacketY <= 21) {
                     lRacketY++;
                 }
                 break;
             case 'K':
+            case 'k':
                 if (rRacketY >= 3) {
                     rRacketY--;
                 }
                 break;
             case 'M':
+            case 'm':
                 if (rRacketY <= 21) {
                     rRacketY++;
                 }
