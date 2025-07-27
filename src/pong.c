@@ -16,7 +16,8 @@ int main() {
         display(lRacketY, rRacketY, ballX, ballY, lScore, rScore);
 
         char command = 0;
-        scanf("%c\n",&command);
+        command = getchar();
+        getchar();
 
         switch (command) {
             case 'A':
