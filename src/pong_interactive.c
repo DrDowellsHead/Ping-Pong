@@ -127,7 +127,7 @@ int main() {
 
         refresh();
 
-        for (int i = 0; i < 100000000 / 2000; i++) {
+        for (int i = 0; i < 100000000 / 2; i++) {
         }
     }
 

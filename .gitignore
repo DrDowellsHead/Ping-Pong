@@ -34,6 +34,7 @@
 *.i*86
 *.x86_64
 *.hex
+*.out
 
 # Debug files
 *.dSYM/
@@ -59,8 +60,8 @@ ehthumbs.db
 Thumbs.db
 
 
-# develop
-.clang-format
-*.out
-pong
+# Style
+*.clang-format
+
+# Other
 .vscode/
