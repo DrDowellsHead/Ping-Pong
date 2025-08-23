@@ -3,7 +3,7 @@ CFLAGS = -Wall -Wextra -Werror -std=c99
 LIBS = -lncurses -lpthread -lssl -lcrypto
 
 # Исходные файлы
-SRC = src/main.c src/game.c src/network.c src/display.c
+SRC = main.c game.c network_ssl.c display.c
 
 # Объектные файлы
 OBJ = $(SRC:.c=.o)

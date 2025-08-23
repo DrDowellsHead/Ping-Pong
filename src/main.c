@@ -1,9 +1,18 @@
+#define _POSIX_C_SOURCE 199309L
+
 #include <ncurses.h>
+#include <time.h>
 #include <unistd.h>
 
 #include "display.h"
 #include "game.h"
-#include "network.h"
+#include "network_ssl.h"
+
+void msleep(int milliseconds) {
+    struct timespec ts = {.tv_sec = milliseconds / 1000,
+                          .tv_nsec = (milliseconds % 1000) * 1000000};
+    nanosleep(&ts, NULL);
+}
 
 int main() {
     game_state_t local_state;  // Состояние компьютера игрока
@@ -23,6 +32,7 @@ int main() {
     game_init(&remote_state);  // Инициализация состояния пира
     network_init(&network_ctx);  // Инициализация сетевого контекста
 
+    network_get_local_ip(local_ip, sizeof(local_ip));
     display_menu(local_ip);
 
     // Выбор режима игры
@@ -41,11 +51,14 @@ int main() {
 
         while (!network_ctx.game_ready) {
             char cancel = getch();
-            if (cancel == 'Q' || cancel == 'q')
-                ;
-            return 0;
+            if (cancel == 'Q' || cancel == 'q') {
+                display_cleanup();
+                network_cleanup(&network_ctx);
+                return 0;
+            }
+            msleep(20);
         }
-        usleep(100000);
+
     } else {
         // Подключение к пиру
         echo();  // Временное включение отображения ввода
@@ -85,14 +98,14 @@ int main() {
                     break;
                 case 'Q':
                 case 'q':  // Выход
-                    goto cleanup
+                    goto cleanup;
             }
         } else {
             // Правый игрок управляет ракеткой
             switch (command) {
                 case 'K':
                 case 'k':  // Движение вверх
-                    if (local_state.rRacketY <= 3)
+                    if (local_state.rRacketY >= 3)
                         local_state.rRacketY--;
                     local_state.command = 1;
                     break;
@@ -130,7 +143,7 @@ int main() {
         }
 
         // Задержка для плавности анимации (50 FPS ~ 20ms на кадр)
-        usleep(20000);
+        msleep(20);
     }
 
     display_game_over(&local_state);

@@ -35,6 +35,8 @@
 *.x86_64
 *.hex
 *.out
+pong_game_p2p
+/pong_game
 
 # Debug files
 *.dSYM/

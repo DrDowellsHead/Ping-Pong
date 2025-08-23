@@ -55,38 +55,38 @@ void display_game(const game_state_t *state, int is_left_player) {
             // Информационная панель
             // Счёт
             if (x == 85 && y == 4) {
-                mvaddch(y, x, "SCORE");
+                mvaddstr(y, x, "SCORE");
             }
             if (x == 85 && y == 5) {
                 char score_text[50];
                 sprintf(score_text, "Left %d | Right %d", state->lScore,
                         state->rScore);
-                mvaddch(y, x, score_text);
+                mvaddstr(y, x, score_text);
             }
 
             // Отображение клавиш управления
-            if (x == 85 && x == 8) {
-                mvaddch(y, x, "CONTROLS");
+            if (x == 85 && y == 8) {
+                mvaddstr(y, x, "CONTROLS");
             }
-            if (x == 85 && x == 9) {
+            if (x == 85 && y == 9) {
                 if (is_left_player) {
-                    mvaddch(y, x, "A/Z - Move");
+                    mvaddstr(y, x, "A/Z - Move");
                 } else {
-                    mvaddch(y, x, "K/M - Move");
+                    mvaddstr(y, x, "K/M - Move");
                 }
             }
             if (x == 85 && x == 10) {
-                mvaddch(y, x, "Q/Cntl+C - Quit");
+                mvaddstr(y, x, "Q/Cntl+C - Quit");
             }
 
             if (x == 85 && y == 13) {
-                mvaddch(y, x, "PLAYER");
+                mvaddstr(y, x, "PLAYER");
             }
             if (x == 85 && y == 14) {
                 if (is_left_player) {
-                    mvaddch(y, x, "LEFT");
+                    mvaddstr(y, x, "LEFT");
                 } else {
-                    mvaddch(y, x, "RIGHT");
+                    mvaddstr(y, x, "RIGHT");
                 }
             }
         }
@@ -98,7 +98,7 @@ void display_menu(const char *local_ip) {
     clear();
     mvprintw(5, 30, "=== P2P PONG GAME ===");
     // Отображение локального IP для подключения
-    mvprintw(7, 25, "Your IP address: %s, local_ip");
+    mvprintw(7, 25, "Your IP address: %s", local_ip);
     // Меню
     mvprintw(9, 25, "Choose mode: ");
     mvprintw(10, 28, "1 - Wait for opponent");
@@ -128,7 +128,7 @@ void display_waiting_screen() {
 void display_connection_error(const char *message) {
     clear();
     mvprintw(12, 30, "Connection error: ");
-    mvprintw(14, 30, message);
+    mvprintw(14, 30, "%s", message);
     mvprintw(16, 30, "Press any key to exit");
     refresh();
 }
