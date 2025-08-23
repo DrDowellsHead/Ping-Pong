@@ -1,6 +1,6 @@
 CC = gcc
 CFLAGS = -Wall -Wextra -Werror -std=c99
-LIBS = -lncurses -lpthread
+LIBS = -lncurses -lpthread -lssl -lcrypto
 
 # Исходные файлы
 SRC = src/main.c src/game.c src/network.c src/display.c
@@ -19,3 +19,6 @@ $(TARGET): $(OBJ)
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 clean:
+	rm -f $(OBJ) $(TARGET)
+
+.PHONY: all clean

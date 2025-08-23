@@ -1,6 +1,8 @@
-#ifndef NETWORK_H
-#define NETWORK_H
+#ifndef NETWORK_SSL_H
+#define NETWORK_SSL_H
 
+#include <openssl/err.h> // Функции обработки ошибок OpenSSL
+#include <openssl/ssl.h> // Основные функции SSL/TLS
 #include <stdlib.h>
 
 #include "game.h"
@@ -15,10 +17,15 @@ typedef struct {
     int connected_socket;  // Сокерт для установленного соединения
     int is_server_mode;  // Мод режима: 1-сервер, 0-клиент
     int game_ready;  // Флаг готовности: 1-соединение установлено
+    SSL_CTX *ssl_ctx;  // Контекст SSL (содержит настройки шифрования)
+    SSL *ssl;          // SSL сессия (для соединения)
 } network_context_t;
 
+int init_openssl();             // Инициализация OpenSSL
+SSL_CTX *create_ssl_context();  // Создание SSL контекста
+void cleanup_openssl();         // Очистка ресурсов OpenSSL
 void network_init(network_context_t *ctx);  // Инициализация
-void newtork_get_local_ip(char *buffer, size_t buffer_size);  // Получение IP
+void network_get_local_ip(char *buffer, size_t buffer_size);  // Получение IP
 void network_start_listener(network_context_t *ctx);  // Запуск сервера
 void network_connect_to_peer(network_context_t *ctx,
                              const char *peer_ip);  // Подключение
