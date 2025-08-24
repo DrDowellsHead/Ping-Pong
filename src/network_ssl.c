@@ -5,6 +5,7 @@
 #include "network_ssl.h"
 
 #include <arpa/inet.h>  // Для работы с IP-адресами
+#include <errno.h>
 #include <ncurses.h>
 #include <netdb.h>    // Для работы с сетевыми именами
 #include <pthread.h>  // Многопоточность
@@ -16,21 +17,16 @@
 
 // Инициализация OpenSSL
 int init_openssl() {
+    SSL_library_init(); // Инициализация библиотеки SSL
     SSL_load_error_strings();  // Текстовые описания ошибок SSL
     OpenSSL_add_ssl_algorithms();  // Регистрация доступных SSL алгоритмов
     return 1;
 }
 
-// Инициализация сетевого контекста
-SSL_CTX *create_ssl_context() {
-    const SSL_METHOD *method;  // Метод SSL/TLS
-    SSL_CTX *ctx;  // Контекст SSL (хранит настройки шифрования)
-
-    // Выбор метода шифрования - TLS
-    method = TLS_server_method();
-
-    // Создание SSL контента
-    ctx = SSL_CTX_new(method);
+// Инициализация сетевого контекста для сервера
+SSL_CTX *create_server_ssl_context() {
+    const SSL_METHOD *method = TLS_server_method();  // Метод SSL/TLS
+    SSL_CTX *ctx = SSL_CTX_new(method);  // Контекст SSL (хранит настройки шифрования)
 
     // Проверка успешности создания контекста
     if (!ctx) {
@@ -39,14 +35,50 @@ SSL_CTX *create_ssl_context() {
         exit(EXIT_FAILURE);
     }
 
+    // Загрузка сертификата для сервера
+    if (SSL_CTX_use_certificate_file(ctx, "cert.pem", SSL_FILETYPE_PEM) <= 0) {
+        fprintf(stderr, "Error loading certificate\n");
+        ERR_print_errors_fp(stderr);
+        exit(EXIT_FAILURE);
+    }
+
+    // Загрузка приватного ключа для сервера
+    if (SSL_CTX_use_PrivateKey_file(ctx, "key.pem", SSL_FILETYPE_PEM) <= 0) {
+        fprintf(stderr, "Error loading private key\n");
+        ERR_print_errors_fp(stderr);
+        exit(EXIT_FAILURE);
+    }
+
+    // Проверка соответствия ключа и сертификата
+    if (!SSL_CTX_check_private_key(ctx)) {
+        fprintf(stderr, "Private key does not match the certificate\n");
+        exit(EXIT_FAILURE);
+    }
+
+    return ctx;
+
     // Дополнительные настройки контекста (можно добавить сертификаты и ключи
     // здесь)
     // SSL_CTX_set_ecdh_auto(ctx,
     //                       1);  // Включение ECDH для Perfect Forward Secrecy
-    SSL_CTX_use_certificate_file(ctx, "cert.pem",
-                                 SSL_FILETYPE_PEM);  // Загрузка сертификата
-    SSL_CTX_use_PrivateKey_file(ctx, "key.pem",
-                                SSL_FILETYPE_PEM);  // Загрузка приватного ключа
+    // SSL_CTX_use_certificate_file(ctx, "cert.pem",
+    //                              SSL_FILETYPE_PEM);  // Загрузка сертификата
+    // SSL_CTX_use_PrivateKey_file(ctx, "key.pem",
+    //                             SSL_FILETYPE_PEM);  // Загрузка приватного ключа
+
+    // return ctx;
+}
+
+// Создание SSL контекста для клиента
+SSL_CTX *create_client_ssl_context() {
+    const SSL_METHOD *method = TLS_client_method(); // Клиентский метод TLS
+    SSL_CTX *ctx = SSL_CTX_new(method); // Создание контекста
+
+    if (!ctx) {
+        perror("Unable to create SSL context");
+        ERR_print_errors_fp(stderr);
+        exit(EXIT_FAILURE);
+    }
 
     return ctx;
 }
@@ -67,7 +99,7 @@ void network_init(network_context_t *ctx) {
     init_openssl();
 
     // Создание SSL контекста (набор настроек шифрования)
-    ctx->ssl_ctx = create_ssl_context();
+    // ctx->ssl_ctx = create_ssl_context();
 }
 
 // Получение локального IP-адреса
@@ -98,6 +130,10 @@ static void *listener_thread(void *arg) {
     struct sockaddr_in address;  // Структура для адреса сокета
     int opt = 1;  // Значение для setsockopt (включение опции)
     int addrlen = sizeof(address);  // Длина адресной структуры
+    int ssl_err;
+
+    // Создание SSL контекста для сервера
+    ctx->ssl_ctx = create_server_ssl_context();
 
     // Создание TCP сокета
     // AF_INET - IPv4, SOCK_STREAM - TCP, 0 - протокол по умолчанию
@@ -139,14 +175,24 @@ static void *listener_thread(void *arg) {
         exit(EXIT_FAILURE);
     }
 
+    // Таймаут для ACCEPT
+    struct timeval timeout;
+    timeout.tv_sec = 30;
+    timeout.tv_usec = 0;
+    setsockopt(ctx->listening_socket, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout));
+
     // Принятие входящего подключения (блокирующая операция)
     // accept ждет, пока клиент подключится к серверу
     if ((ctx->connected_socket =
              accept(ctx->listening_socket, (struct sockaddr *)&address,
                     (socklen_t *)&addrlen)) < 0) {
-        perror("accept");
+        if (errno == EAGAIN || errno == EWOULDBLOCK) {
+            printf("Accept timeout\n");
+        } else {
+            perror("accept");
+        }
         close(ctx->listening_socket);
-        exit(EXIT_FAILURE);
+        pthread_exit(NULL);
     }
 
     // === SSL HANDSHAKE (Рукопожатие) - Начинается шифрование ===
@@ -160,10 +206,12 @@ static void *listener_thread(void *arg) {
     // Сервер принимает SSL соединение (инициирует handshake)
     if (SSL_accept(ctx->ssl) <= 0) {
         // Ошибка SSL Handshake
+        ssl_err = SSL_get_error(ctx->ssl, -1);
+        printf("SSL accept failed: %d\n", ssl_err);
         ERR_print_errors_fp(stderr);
         close(ctx->connected_socket);
         close(ctx->listening_socket);
-        exit(EXIT_FAILURE);
+        pthread_exit(NULL);
     }
 
     // Handshake удался, соединение зашифровано
@@ -188,14 +236,24 @@ void network_start_listener(network_context_t *ctx) {
 // Подключение к другому пиру
 void network_connect_to_peer(network_context_t *ctx, const char *peer_ip) {
     struct sockaddr_in serv_addr;  // Структура адреса пира
+    int ssl_err;
+
+    ctx->ssl_ctx = create_client_ssl_context();
 
     // Создание TCP сокета для подключения
     if ((ctx->connected_socket = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
-        mvprintw(17, 25, "Socket creation error");
+        mvprintw(17, 25, "Socket creation error: %s", strerror(errno));
         refresh();
         ctx->game_ready = 0;
         return;
     }
+
+    // Установка таймаута для соединения
+    struct timeval timeout;
+    timeout.tv_sec = 5;
+    timeout.tv_usec = 0;
+    setsockopt(ctx->connected_socket, SOL_SOCKET, SO_SNDTIMEO, &timeout, sizeof(timeout));
+    setsockopt(ctx->connected_socket, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout));
 
     // Заполнение структуры адреса пира
     serv_addr.sin_family = AF_INET;    // IPv4
@@ -233,8 +291,10 @@ void network_connect_to_peer(network_context_t *ctx, const char *peer_ip) {
     // Клиент инициализирует SSL соединение
     if (SSL_connect(ctx->ssl) <= 0) {
         // Ошибка SSL Handshake
-        mvprintw(17, 25, "SSL handshake failed");
+        ssl_err = SSL_get_error(ctx->ssl, -1);
+        mvprintw(17, 25, "SSL handshake failed: %d", ssl_err);
         refresh();
+        ERR_print_errors_fp(stderr);
         close(ctx->connected_socket);
         ctx->connected_socket = -1;
         ctx->game_ready = 0;
@@ -242,7 +302,7 @@ void network_connect_to_peer(network_context_t *ctx, const char *peer_ip) {
     }
 
     // Handshake успешен, соединение зашифровано
-    mvprintw(17, 25, "SSL connection established");
+    mvprintw(17, 25, "SSL connection established! Cipher: %s", SSL_get_cipher(ctx->ssl));
     refresh();
     // printf("SSL соединение установлено. Используется шифр: %s\n",
     //        SSL_get_cipher(ctx->ssl));  // Вывод информации о используемом

@@ -65,5 +65,8 @@ Thumbs.db
 # Style
 *.clang-format
 
+# SSL Certificates
+*.pem
+
 # Other
 .vscode/
