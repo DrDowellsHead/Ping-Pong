@@ -3,6 +3,7 @@
 #include <ncurses.h>
 #include <time.h>
 #include <unistd.h>
+#include <ctype.h>
 
 #include "display.h"
 #include "game.h"
@@ -25,7 +26,7 @@ int main() {
     network_context_t network_ctx;
 
     char local_ip[MAX_IP_LENGTH];
-    char peer_ip[MAX_IP_LENGTH];
+    char peer_ip[MAX_IP_LENGTH] = {0};
 
     display_init();           // инициализация ncurses
     game_init(&local_state);  // Инициализация состояния главного компьютера
@@ -61,16 +62,43 @@ int main() {
 
     } else {
         // Подключение к пиру
+        nodelay(stdscr, FALSE);
         echo();  // Временное включение отображения ввода
+
+        int ch;
+        while ((ch = getch()) != '\n' && ch != ERR);
+
         mvprintw(15, 25, "Enter opponent IP: ");
         refresh();
 
-        // Чтение IP пира
-        getnstr(peer_ip, MAX_IP_LENGTH - 1);
+        // Ввод IP
+        char ip_input[MAX_IP_LENGTH] = {0};
+        getnstr(ip_input, MAX_IP_LENGTH - 1);
+
+        strncpy(peer_ip, ip_input, MAX_IP_LENGTH - 1);
+        peer_ip[MAX_IP_LENGTH - 1] = '\0';
+
         noecho();
+        nodelay(stdscr, TRUE);
 
         // Попытка подключения
-        network_connect_to_peer(&network_ctx, peer_ip);
+        if (strlen(peer_ip) > 0) {
+            network_connect_to_peer(&network_ctx, peer_ip);
+
+            if (!network_ctx.game_ready) {
+                mvprintw(17, 25, "Connection failed! Press any key to exit");
+                refresh();
+                msleep(3000);
+                getch();
+                goto cleanup;
+            }
+        } else {
+            mvprintw(17, 25, "IP address cannot be empty! Press any key to exit");
+            refresh();
+            msleep(3000);
+            getch();
+            goto cleanup;
+        }
     }
 
     // Главный игровой цикл

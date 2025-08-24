@@ -12,6 +12,7 @@
 #include <string.h>
 #include <sys/socket.h>  // Для работы с сокетами (socket, bind, listen, accept)
 #include <unistd.h>  // POSIX API (close, read, write, gethostname)
+#include <ncurses.h>
 
 // Инициализация OpenSSL
 int init_openssl() {
@@ -191,8 +192,10 @@ void network_connect_to_peer(network_context_t *ctx, const char *peer_ip) {
 
     // Создание TCP сокета для подключения
     if ((ctx->connected_socket = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
-        printf("Ошибка создания сокета\n");
-        exit(EXIT_FAILURE);
+        mvprintw(17, 25, "Socket creation error");
+        refresh();
+        ctx->game_ready = 0;
+        return;
     }
 
     // Заполнение структуры адреса пира
@@ -201,17 +204,23 @@ void network_connect_to_peer(network_context_t *ctx, const char *peer_ip) {
 
     // Преобразование текстового IP в бинарный формат
     if (inet_pton(AF_INET, peer_ip, &serv_addr.sin_addr) <= 0) {
-        printf("\nНеверный адрес: %s\n", peer_ip);
+        mvprintw(17, 25, "Invalid IP address: %s", peer_ip);
+        refresh();
         close(ctx->connected_socket);
-        exit(EXIT_FAILURE);
+        ctx->connected_socket = -1;
+        ctx->game_ready = 0;
+        return;
     }
 
     // Установка соединения с пиром
     if (connect(ctx->connected_socket, (struct sockaddr *)&serv_addr,
                 sizeof(serv_addr)) < 0) {
-        printf("´Ошибка подключения к %s\n", peer_ip);
+        mvprintw(17, 25, "Connection failed to %s", peer_ip);
+        refresh();
         close(ctx->connected_socket);
-        exit(EXIT_FAILURE);
+        ctx->connected_socket = -1;
+        ctx->game_ready = 0;
+        return;
     }
 
     // === SSL HANDSHAKE со стороны клиента ===
@@ -225,14 +234,19 @@ void network_connect_to_peer(network_context_t *ctx, const char *peer_ip) {
     // Клиент инициализирует SSL соединение
     if (SSL_connect(ctx->ssl) <= 0) {
         // Ошибка SSL Handshake
-        ERR_print_errors_fp(stderr);
+        mvprintw(17, 25, "SSL handshake failed");
+        refresh();
         close(ctx->connected_socket);
-        exit(EXIT_FAILURE);
+        ctx->connected_socket = -1;
+        ctx->game_ready = 0;
+        return;
     }
 
     // Handshake успешен, соединение зашифровано
-    printf("SSL соединение установлено. Используется шифр: %s\n",
-           SSL_get_cipher(ctx->ssl));  // Вывод информации о используемом шифре
+    mvprintw(17, 25, "SSL connection established");
+    refresh();
+    // printf("SSL соединение установлено. Используется шифр: %s\n",
+    //        SSL_get_cipher(ctx->ssl));  // Вывод информации о используемом шифре
 
     ctx->game_ready = 1;  // Соединение установлено, игра готова
 }
