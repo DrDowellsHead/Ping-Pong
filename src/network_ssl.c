@@ -5,6 +5,7 @@
 #include "network_ssl.h"
 
 #include <arpa/inet.h>  // Для работы с IP-адресами
+#include <ncurses.h>
 #include <netdb.h>    // Для работы с сетевыми именами
 #include <pthread.h>  // Многопоточность
 #include <stdio.h>
@@ -12,7 +13,6 @@
 #include <string.h>
 #include <sys/socket.h>  // Для работы с сокетами (socket, bind, listen, accept)
 #include <unistd.h>  // POSIX API (close, read, write, gethostname)
-#include <ncurses.h>
 
 // Инициализация OpenSSL
 int init_openssl() {
@@ -43,11 +43,10 @@ SSL_CTX *create_ssl_context() {
     // здесь)
     // SSL_CTX_set_ecdh_auto(ctx,
     //                       1);  // Включение ECDH для Perfect Forward Secrecy
-    // SSL_CTX_use_certificate_file(ctx, "cert.pem",
-    //                              SSL_FILETYPE_PEM);  // Загрузка сертификата
-    // SSL_CTX_use_PrivateKey_file(ctx, "key.pem",
-    //                             SSL_FILETYPE_PEM);  // Загрузка приватного
-    //                             ключа
+    SSL_CTX_use_certificate_file(ctx, "cert.pem",
+                                 SSL_FILETYPE_PEM);  // Загрузка сертификата
+    SSL_CTX_use_PrivateKey_file(ctx, "key.pem",
+                                SSL_FILETYPE_PEM);  // Загрузка приватного ключа
 
     return ctx;
 }
@@ -246,7 +245,8 @@ void network_connect_to_peer(network_context_t *ctx, const char *peer_ip) {
     mvprintw(17, 25, "SSL connection established");
     refresh();
     // printf("SSL соединение установлено. Используется шифр: %s\n",
-    //        SSL_get_cipher(ctx->ssl));  // Вывод информации о используемом шифре
+    //        SSL_get_cipher(ctx->ssl));  // Вывод информации о используемом
+    //        шифре
 
     ctx->game_ready = 1;  // Соединение установлено, игра готова
 }
