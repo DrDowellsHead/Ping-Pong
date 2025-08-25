@@ -149,6 +149,12 @@ int main() {
             }
         }
 
+        network_send_game_state(&network_ctx, &local_state, &ball_vel);
+
+        if (is_left_player) {
+            game_update_ball(&local_state, &ball_vel.velX, &ball_vel.velY);
+        }
+
         // Сетевой обмен данными
         network_send_game_state(&network_ctx, &local_state, &ball_vel);
 
@@ -170,9 +176,6 @@ int main() {
             game_update_ball(&local_state, &ball_vel.velX, &ball_vel.velY);
         }
 
-        // Передача velocity в функцию отправки
-        network_send_game_state(&network_ctx, &local_state, &ball_vel);
-
         // Получение velocity из функции приёма
         if (network_receive_game_state(&network_ctx, &remote_state,
                                        &ball_vel)) {
@@ -192,7 +195,7 @@ int main() {
         }
 
         // Задержка для плавности анимации (50 FPS ~ 20ms на кадр)
-        msleep(20);
+        msleep(40);
     }
 
     display_game_over(&local_state);

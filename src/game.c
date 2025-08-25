@@ -15,40 +15,34 @@ void game_init(game_state_t *state) {
 collision_into_t game_check_collision(const game_state_t *state) {
     collision_into_t info = {0, 0, 0};
 
-    // Стокнеовение с левой ракеткой
-    if (state->ballX == 3) {
-        info.type = 1;     // Тип: ракетка
-        info.is_left = 1;  // Левая ракетка
-
-        if (state->ballY == state->lRacketY) {
-            info.is_center = 1;  // Попадание в центр
-        } else if (state->ballY == state->lRacketY - 1 ||
-                   state->ballY == state->lRacketY + 1) {
-            info.is_center = 0;  // Мяч попал в край ракетки
-        } else {
-            info.type = 0;  // Не попали в ракетку
-        }
-
-        if (info.type != 0)
+    // Столкновение с левой ракеткой
+    if (state->ballX == 2) {
+        if (state->ballY >= state->lRacketY - 1 &&
+            state->ballY <= state->lRacketY + 1) {
+            info.type = 1;     // Тип: ракетка
+            info.is_left = 1;  // Левая ракетка
+            info.is_center = (state->ballY == state->lRacketY) ? 1 : 0;
             return info;
+        } else {
+            info.type = 3;
+            info.is_left = 1;
+            return info;
+        }
     }
 
     // Столкновение с правой ракеткой
-    if (state->ballX == 75) {
-        info.type = 1;     // Тип: ракетка
-        info.is_left = 0;  // Правая ракетка
-
-        if (state->ballX == state->rRacketY) {
-            info.is_center = 1;  // Попадание в центр
-        } else if (state->ballY == state->rRacketY - 1 ||
-                   state->ballY == state->rRacketY + 1) {
-            info.is_center = 0;  // Мяч попал в край ракетки
-        } else {
-            info.type = 0;  // Не попали в ракетку
-        }
-
-        if (info.type != 0)
+    if (state->ballX == 76) {
+        if (state->ballY >= state->rRacketY - 1 &&
+            state->ballY <= state->rRacketY + 1) {
+            info.type = 1;     // Тип: ракетка
+            info.is_left = 0;  // Правая ракетка
+            info.is_center = (state->ballY == state->rRacketY) ? 1 : 0;
             return info;
+        } else {
+            info.type = 3;
+            info.is_left = 0;
+            return info;
+        }
     }
 
     // Стокновение с верхней стенкой (Y = 1)
@@ -71,7 +65,7 @@ collision_into_t game_check_collision(const game_state_t *state) {
     }
 
     // Мяч ушёл за правую стенку
-    if (state->ballX >= 78) {
+    if (state->ballX >= 79) {
         info.type = 3;     // Тип: гол
         info.is_left = 0;  // Правая ракетка
         return info;
@@ -81,46 +75,78 @@ collision_into_t game_check_collision(const game_state_t *state) {
 }
 
 void game_update_ball(game_state_t *state, int *velX, int *velY) {
+    
+
+    state->ballX += *velX;
+    state->ballY += *velY;
+
     collision_into_t collision = game_check_collision(state);
+    
 
     // Обработка коллизии
     switch (collision.type) {
-        case 1:                // Столкновение с ракеткой
-            *velX = -(*velX);  // При столкновении с ракеткой всегда меняется
-                               // координата X
-
+        case 1:  // Столкновение с ракеткой
             if (collision.is_center) {
-                *velY = 0;  // Попадание в центр - прямой отскок
+                *velX =
+                    -(*velX);  // При столкновении с ракеткой X всегда меняется
+                *velY = 0;
             } else {
-                *velY = -(*velY);  // Попадание по краю - диагональный отскок
+                // Удар в край
+                *velX = -(*velX);
+
+                if (collision.is_left) {
+                    // Удар в верхнюю часть
+                    if (state->ballY == state->lRacketY - 1) {
+                        *velY = -1;
+                        // Удар в нижнюю часть
+                    } else if (state->ballY == state->lRacketY + 1) {
+                        *velY = 1;
+                    }
+                    // Правая ракетка
+                } else {
+                    // Удар в верхнюю часть
+                    if (state->ballY == state->rRacketY - 1) {
+                        *velY = -1;
+                        // Удар в нижнюю часть
+                    } else if (state->ballY == state->rRacketY + 1) {
+                        *velY = 1;
+                    }
+                }
             }
             break;
 
         case 2:  // Столкновение со стенкой
-            *velY =
-                -(*velY);  // При столкновении со стенкой меняется Y координата
+            *velY = -(*velY);
+            if (state->ballY == 1) state->ballY = 2;
+            if (state->ballY == 23) state->ballY = 22;
             break;
-
         case 3:  // Гол
-            game_reset_after_score(state, collision.is_left);
+            state->ballX -= *velX;
+            state->ballY -= *velY;
+            game_reset_after_score(state, velX, velY, collision.is_left);
             return;
     }
 
-    state->ballX += *velX;
-    state->ballY += *velY;
+
 }
 
-void game_reset_after_score(game_state_t *state, int is_left_goal) {
+void game_reset_after_score(game_state_t *state, int *velX, int *velY, int is_left_goal) {
     if (is_left_goal) {
         // Гол в левые ворота
         state->rScore++;
         state->ballX = 3;  // Возвращаем мяч левому игроку
+        *velX = -1;
     } else {
         // Гол в правые ворота
         state->lScore++;
         state->ballX = 75;  // Возвращаем мяч правому игроку
+        *velX = 1;
     }
-    state->ballY = 13;  // Мяч по центру
+    state->ballY = 13;
+    state->lRacketY = 13;
+    state->rRacketY = 13;
+
+    *velY = 0;
 }
 
 // Завершение игры при достижении максимального количества очков у одного из

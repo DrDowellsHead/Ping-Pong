@@ -33,7 +33,7 @@ typedef struct {
 void game_init(game_state_t *state);
 collision_into_t game_check_collision(const game_state_t *state);
 void game_update_ball(game_state_t *state, int *velX, int *velY);
-void game_reset_after_score(game_state_t *state, int scorer);
+void game_reset_after_score(game_state_t *state, int *velX, int *velY, int is_left_goal);
 int game_is_over(const game_state_t *state);
 
 #endif

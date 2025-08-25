@@ -169,7 +169,7 @@ static void *listener_thread(void *arg) {
     // Начало прослушивания входящих подключений
     // 3 - максимальная длина очереди ожидающих подключений
     if (listen(ctx->listening_socket, 3) < 0) {
-        perror("listen");
+        perror("listen\n");
         close(ctx->listening_socket);
         exit(EXIT_FAILURE);
     }
@@ -189,7 +189,7 @@ static void *listener_thread(void *arg) {
         if (errno == EAGAIN || errno == EWOULDBLOCK) {
             printf("Accept timeout\n");
         } else {
-            perror("accept");
+            perror("accept\n");
         }
         close(ctx->listening_socket);
         pthread_exit(NULL);
