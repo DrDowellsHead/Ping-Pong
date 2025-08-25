@@ -3,11 +3,15 @@
 
 // Структура для информации о столкновении
 typedef struct {
-    int type; // 0-нет, 1-ракетка, 2-стенка, 3-гол
-    int is_center; // 1-попадание в центр, 0-в край
-    int is_left; // 1-левая ракетка, 0-правая
+    int type;       // 0-нет, 1-ракетка, 2-стенка, 3-гол
+    int is_center;  // 1-попадание в центр, 0-в край
+    int is_left;    // 1-левая ракетка, 0-правая
 } collision_into_t;
 
+typedef struct {
+    int velX;
+    int velY;
+} ball_velocity_t;
 
 // Инициализация структуры для хранения состояний игры
 typedef struct {

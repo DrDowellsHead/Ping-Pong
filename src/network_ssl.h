@@ -1,8 +1,8 @@
 #ifndef NETWORK_SSL_H
 #define NETWORK_SSL_H
 
-#include <openssl/err.h> // Функции обработки ошибок OpenSSL
-#include <openssl/ssl.h> // Основные функции SSL/TLS
+#include <openssl/err.h>  // Функции обработки ошибок OpenSSL
+#include <openssl/ssl.h>  // Основные функции SSL/TLS
 #include <stdlib.h>
 
 #include "game.h"
@@ -21,18 +21,21 @@ typedef struct {
     SSL *ssl;          // SSL сессия (для соединения)
 } network_context_t;
 
-int init_openssl();             // Инициализация OpenSSL
-SSL_CTX *create_ssl_context();  // Создание SSL контекста
-void cleanup_openssl();         // Очистка ресурсов OpenSSL
+int init_openssl();  // Инициализация OpenSSL
+SSL_CTX *create_server_ssl_context();  // Создание SSL контекста у сервера
+SSL_CTX *create_client_ssl_context();  // Создание SSL контекста у клиента
+void cleanup_openssl();  // Очистка ресурсов OpenSSL
 void network_init(network_context_t *ctx);  // Инициализация
 void network_get_local_ip(char *buffer, size_t buffer_size);  // Получение IP
 void network_start_listener(network_context_t *ctx);  // Запуск сервера
 void network_connect_to_peer(network_context_t *ctx,
                              const char *peer_ip);  // Подключение
 void network_send_game_state(const network_context_t *ctx,
-                             const game_state_t *state);  // Отправка
+                             const game_state_t *state,
+                             ball_velocity_t *vel);  // Отправка
 int network_receive_game_state(const network_context_t *ctx,
-                               game_state_t *state);  // Получение
+                               game_state_t *state,
+                               ball_velocity_t *vel);  // Получение
 void network_cleanup(network_context_t *ctx);  // Очистка ресурсов
 
 #endif

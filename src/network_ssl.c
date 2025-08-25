@@ -17,7 +17,7 @@
 
 // Инициализация OpenSSL
 int init_openssl() {
-    SSL_library_init(); // Инициализация библиотеки SSL
+    SSL_library_init();  // Инициализация библиотеки SSL
     SSL_load_error_strings();  // Текстовые описания ошибок SSL
     OpenSSL_add_ssl_algorithms();  // Регистрация доступных SSL алгоритмов
     return 1;
@@ -26,7 +26,8 @@ int init_openssl() {
 // Инициализация сетевого контекста для сервера
 SSL_CTX *create_server_ssl_context() {
     const SSL_METHOD *method = TLS_server_method();  // Метод SSL/TLS
-    SSL_CTX *ctx = SSL_CTX_new(method);  // Контекст SSL (хранит настройки шифрования)
+    SSL_CTX *ctx =
+        SSL_CTX_new(method);  // Контекст SSL (хранит настройки шифрования)
 
     // Проверка успешности создания контекста
     if (!ctx) {
@@ -64,15 +65,16 @@ SSL_CTX *create_server_ssl_context() {
     // SSL_CTX_use_certificate_file(ctx, "cert.pem",
     //                              SSL_FILETYPE_PEM);  // Загрузка сертификата
     // SSL_CTX_use_PrivateKey_file(ctx, "key.pem",
-    //                             SSL_FILETYPE_PEM);  // Загрузка приватного ключа
+    //                             SSL_FILETYPE_PEM);  // Загрузка приватного
+    //                             ключа
 
     // return ctx;
 }
 
 // Создание SSL контекста для клиента
 SSL_CTX *create_client_ssl_context() {
-    const SSL_METHOD *method = TLS_client_method(); // Клиентский метод TLS
-    SSL_CTX *ctx = SSL_CTX_new(method); // Создание контекста
+    const SSL_METHOD *method = TLS_client_method();  // Клиентский метод TLS
+    SSL_CTX *ctx = SSL_CTX_new(method);  // Создание контекста
 
     if (!ctx) {
         perror("Unable to create SSL context");
@@ -97,9 +99,6 @@ void network_init(network_context_t *ctx) {
 
     // Инициализация OpenSSL
     init_openssl();
-
-    // Создание SSL контекста (набор настроек шифрования)
-    // ctx->ssl_ctx = create_ssl_context();
 }
 
 // Получение локального IP-адреса
@@ -179,7 +178,8 @@ static void *listener_thread(void *arg) {
     struct timeval timeout;
     timeout.tv_sec = 30;
     timeout.tv_usec = 0;
-    setsockopt(ctx->listening_socket, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout));
+    setsockopt(ctx->listening_socket, SOL_SOCKET, SO_RCVTIMEO, &timeout,
+               sizeof(timeout));
 
     // Принятие входящего подключения (блокирующая операция)
     // accept ждет, пока клиент подключится к серверу
@@ -252,8 +252,10 @@ void network_connect_to_peer(network_context_t *ctx, const char *peer_ip) {
     struct timeval timeout;
     timeout.tv_sec = 5;
     timeout.tv_usec = 0;
-    setsockopt(ctx->connected_socket, SOL_SOCKET, SO_SNDTIMEO, &timeout, sizeof(timeout));
-    setsockopt(ctx->connected_socket, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout));
+    setsockopt(ctx->connected_socket, SOL_SOCKET, SO_SNDTIMEO, &timeout,
+               sizeof(timeout));
+    setsockopt(ctx->connected_socket, SOL_SOCKET, SO_RCVTIMEO, &timeout,
+               sizeof(timeout));
 
     // Заполнение структуры адреса пира
     serv_addr.sin_family = AF_INET;    // IPv4
@@ -302,7 +304,8 @@ void network_connect_to_peer(network_context_t *ctx, const char *peer_ip) {
     }
 
     // Handshake успешен, соединение зашифровано
-    mvprintw(17, 25, "SSL connection established! Cipher: %s", SSL_get_cipher(ctx->ssl));
+    mvprintw(17, 25, "SSL connection established! Cipher: %s",
+             SSL_get_cipher(ctx->ssl));
     refresh();
     // printf("SSL соединение установлено. Используется шифр: %s\n",
     //        SSL_get_cipher(ctx->ssl));  // Вывод информации о используемом
@@ -313,14 +316,14 @@ void network_connect_to_peer(network_context_t *ctx, const char *peer_ip) {
 
 // Отправка состояния игры пиру с SSL шифрованием
 void network_send_game_state(const network_context_t *ctx,
-                             const game_state_t *state) {
+                             const game_state_t *state, ball_velocity_t *vel) {
     char buffer[BUFFER_SIZE];  // Буфер данных
 
     // Форматирование состояния в строку
     // Форматируются X,Y положения ракеток, положение X,Y мяча, очки и комманды
-    snprintf(buffer, BUFFER_SIZE, "%d,%d,%d,%d,%d,%d,%d", state->lRacketY,
+    snprintf(buffer, BUFFER_SIZE, "%d,%d,%d,%d,%d,%d,%d,%d,%d", state->lRacketY,
              state->rRacketY, state->ballX, state->ballY, state->lScore,
-             state->rScore, state->command);
+             state->rScore, state->command, vel->velX, vel->velY);
 
     // Отправка данных через SSL, данные автоматически шифруются
     // SSL_write обрабатывает всё шифрование прозрачно для нас
@@ -336,7 +339,7 @@ void network_send_game_state(const network_context_t *ctx,
 
 // Получение состояния игры от пира с SSL дешифрованием
 int network_receive_game_state(const network_context_t *ctx,
-                               game_state_t *state) {
+                               game_state_t *state, ball_velocity_t *vel) {
     char buffer[BUFFER_SIZE] = {0};  // Буфер для приема данных
 
     // Чтение данных из через SSL - данные автоматически дешифруются
@@ -347,9 +350,9 @@ int network_receive_game_state(const network_context_t *ctx,
         buffer[bytes_received] = '\0';  // Завершающий ноль
 
         // Преобразование строки обратно в структуру состояния
-        sscanf(buffer, "%d,%d,%d,%d,%d,%d,%d", &state->lRacketY,
+        sscanf(buffer, "%d,%d,%d,%d,%d,%d,%d,%d,%d", &state->lRacketY,
                &state->rRacketY, &state->ballX, &state->ballY, &state->lScore,
-               &state->rScore, &state->command);
+               &state->rScore, &state->command, &vel->velX, &vel->velY);
         return 1;  // Данные успешно получены
     } else if (bytes_received == 0) {
         // Соединение закрыто пиром

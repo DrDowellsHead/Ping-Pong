@@ -1,9 +1,9 @@
 #define _POSIX_C_SOURCE 199309L
 
+#include <ctype.h>
 #include <ncurses.h>
 #include <time.h>
 #include <unistd.h>
-#include <ctype.h>
 
 #include "display.h"
 #include "game.h"
@@ -19,8 +19,7 @@ int main() {
     game_state_t local_state;  // Состояние компьютера игрока
     game_state_t remote_state;  // Состояние пира
 
-    int velX = 1;  // 1 пиксель за кадр
-    int velY = 1;
+    ball_velocity_t ball_vel = {1, 1};  // 1 пиксель за кадр по X и Y
 
     // Сетевой контекст
     network_context_t network_ctx;
@@ -93,7 +92,8 @@ int main() {
                 goto cleanup;
             }
         } else {
-            mvprintw(17, 25, "IP address cannot be empty! Press any key to exit");
+            mvprintw(17, 25,
+                     "IP address cannot be empty! Press any key to exit");
             refresh();
             msleep(3000);
             getch();
@@ -150,10 +150,10 @@ int main() {
         }
 
         // Сетевой обмен данными
-        network_send_game_state(&network_ctx, &local_state);
+        network_send_game_state(&network_ctx, &local_state, &ball_vel);
 
         // Получение состояние пира
-        if (network_receive_game_state(&network_ctx, &remote_state)) {
+        if (network_receive_game_state(&network_ctx, &remote_state, &ball_vel)) {
             // Синхронизация состояний
             if (is_left_player) {
                 // У левого игрока обновляется только правая ракетка и счёт
@@ -165,9 +165,30 @@ int main() {
             }
         }
 
-        // Коллизия мяча обрабатывается только левым игроком для синхронизации
+        // Коллизия мяча обрабатывается только на сервере для синхронизации
         if (is_left_player) {
-            game_update_ball(&local_state, &velX, &velY);
+            game_update_ball(&local_state, &ball_vel.velX, &ball_vel.velY);
+        }
+
+        // Передача velocity в функцию отправки
+        network_send_game_state(&network_ctx, &local_state, &ball_vel);
+
+        // Получение velocity из функции приёма
+        if (network_receive_game_state(&network_ctx, &remote_state,
+                                       &ball_vel)) {
+            if (is_left_player) {
+                // Сервер получет положение правой ракетки
+                local_state.rRacketY = remote_state.rRacketY;
+                local_state.rScore =
+                    remote_state.rScore;  // Синхронизация счёта
+            } else {
+                // Клиент получает все состояния от сервера
+                local_state.lRacketY = remote_state.lRacketY;
+                local_state.ballX = remote_state.ballX;
+                local_state.ballY = remote_state.ballY;
+                local_state.lScore = remote_state.lScore;
+                local_state.rScore = remote_state.rScore;
+            }
         }
 
         // Задержка для плавности анимации (50 FPS ~ 20ms на кадр)
