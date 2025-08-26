@@ -149,8 +149,29 @@ int main() {
             }
         }
 
-        network_send_game_state(&network_ctx, &local_state, &ball_vel);
+        // Сетевой обмен данными
+        // network_send_game_state(&network_ctx, &local_state, &ball_vel);
 
+        // if (is_left_player) {
+        //     game_update_ball(&local_state, &ball_vel.velX, &ball_vel.velY);
+        // }
+
+
+
+        // // Получение состояние пира
+        // if (network_receive_game_state(&network_ctx, &remote_state, &ball_vel)) {
+        //     // Синхронизация состояний
+        //     if (is_left_player) {
+        //         // У левого игрока обновляется только правая ракетка и счёт
+        //         local_state.rRacketY = remote_state.rRacketY;
+        //         local_state.rScore = remote_state.rScore;
+        //     } else {
+        //         local_state.lRacketY = remote_state.lRacketY;
+        //         local_state.lScore = remote_state.lScore;
+        //     }
+        // }
+
+        // Коллизия мяча обрабатывается только на сервере для синхронизации
         if (is_left_player) {
             game_update_ball(&local_state, &ball_vel.velX, &ball_vel.velY);
         }
@@ -158,41 +179,28 @@ int main() {
         // Сетевой обмен данными
         network_send_game_state(&network_ctx, &local_state, &ball_vel);
 
-        // Получение состояние пира
-        if (network_receive_game_state(&network_ctx, &remote_state, &ball_vel)) {
-            // Синхронизация состояний
-            if (is_left_player) {
-                // У левого игрока обновляется только правая ракетка и счёт
-                local_state.rRacketY = remote_state.rRacketY;
-                local_state.rScore = remote_state.rScore;
-            } else {
-                local_state.lRacketY = remote_state.lRacketY;
-                local_state.lScore = remote_state.lScore;
-            }
-        }
-
-        // Коллизия мяча обрабатывается только на сервере для синхронизации
-        if (is_left_player) {
-            game_update_ball(&local_state, &ball_vel.velX, &ball_vel.velY);
-        }
-
         // Получение velocity из функции приёма
-        if (network_receive_game_state(&network_ctx, &remote_state,
-                                       &ball_vel)) {
+        // if (network_receive_game_state(&network_ctx, &remote_state,
+        //                                &ball_vel)) {
             if (is_left_player) {
-                // Сервер получет положение правой ракетки
-                local_state.rRacketY = remote_state.rRacketY;
-                local_state.rScore =
-                    remote_state.rScore;  // Синхронизация счёта
+                ball_velocity_t ignore_vel;
+                if(network_receive_game_state(&network_ctx, &remote_state, &ignore_vel)) {
+                    // Сервер получет положение правой ракетки
+                    local_state.rRacketY = remote_state.rRacketY;
+                    local_state.rScore = remote_state.rScore;  // Синхронизация счёта
+                }
             } else {
                 // Клиент получает все состояния от сервера
-                local_state.lRacketY = remote_state.lRacketY;
-                local_state.ballX = remote_state.ballX;
-                local_state.ballY = remote_state.ballY;
-                local_state.lScore = remote_state.lScore;
-                local_state.rScore = remote_state.rScore;
+                if (network_receive_game_state(&network_ctx, &remote_state, &ball_vel)) {
+                    local_state.lRacketY = remote_state.lRacketY;
+                    local_state.rRacketY = remote_state.rRacketY;
+                    local_state.ballX = remote_state.ballX;
+                    local_state.ballY = remote_state.ballY;
+                    local_state.lScore = remote_state.lScore;
+                    // local_state.rScore = remote_state.rScore;
+                }
             }
-        }
+        // }
 
         // Задержка для плавности анимации (50 FPS ~ 20ms на кадр)
         msleep(40);

@@ -5,7 +5,7 @@
 void game_init(game_state_t *state) {
     state->lRacketY = 13;
     state->rRacketY = 13;
-    state->ballX = 3;
+    state->ballX = 4;
     state->ballY = 13;
     state->lScore = 0;
     state->rScore = 0;
@@ -16,7 +16,7 @@ collision_into_t game_check_collision(const game_state_t *state) {
     collision_into_t info = {0, 0, 0};
 
     // Столкновение с левой ракеткой
-    if (state->ballX == 2) {
+    if (state->ballX == 3) {
         if (state->ballY >= state->lRacketY - 1 &&
             state->ballY <= state->lRacketY + 1) {
             info.type = 1;     // Тип: ракетка
@@ -75,13 +75,10 @@ collision_into_t game_check_collision(const game_state_t *state) {
 }
 
 void game_update_ball(game_state_t *state, int *velX, int *velY) {
-    
 
-    state->ballX += *velX;
-    state->ballY += *velY;
+
 
     collision_into_t collision = game_check_collision(state);
-    
 
     // Обработка коллизии
     switch (collision.type) {
@@ -117,30 +114,33 @@ void game_update_ball(game_state_t *state, int *velX, int *velY) {
 
         case 2:  // Столкновение со стенкой
             *velY = -(*velY);
-            if (state->ballY == 1) state->ballY = 2;
-            if (state->ballY == 23) state->ballY = 22;
+            // if (state->ballY == 1)
+            //     state->ballY = 2;
+            // if (state->ballY == 23)
+            //     state->ballY = 22;
             break;
         case 3:  // Гол
-            state->ballX -= *velX;
-            state->ballY -= *velY;
             game_reset_after_score(state, velX, velY, collision.is_left);
+            // state->ballX -= *velX;
+            // state->ballY -= *velY;
             return;
     }
-
-
+    state->ballX += *velX;
+    state->ballY += *velY;
 }
 
-void game_reset_after_score(game_state_t *state, int *velX, int *velY, int is_left_goal) {
+void game_reset_after_score(game_state_t *state, int *velX, int *velY,
+                            int is_left_goal) {
     if (is_left_goal) {
         // Гол в левые ворота
         state->rScore++;
-        state->ballX = 3;  // Возвращаем мяч левому игроку
-        *velX = -1;
+        state->ballX = 4;  // Возвращаем мяч левому игроку
+        *velX = 1;
     } else {
         // Гол в правые ворота
         state->lScore++;
         state->ballX = 75;  // Возвращаем мяч правому игроку
-        *velX = 1;
+        *velX = -1;
     }
     state->ballY = 13;
     state->lRacketY = 13;
