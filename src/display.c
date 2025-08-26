@@ -30,7 +30,7 @@ void display_game(const game_state_t *state, int is_left_player) {
                 // Внутрення часть поля
                 else {
                     // Левая ракетка
-                    if ((x == 2) &&
+                    if ((x == 3) &&
                         (y == state->lRacketY || y == state->lRacketY - 1 ||
                          y == state->lRacketY + 1)) {
                         mvaddch(y, x, '|');
@@ -75,7 +75,7 @@ void display_game(const game_state_t *state, int is_left_player) {
                     mvaddstr(y, x, "K/M - Move");
                 }
             }
-            if (x == 85 && x == 10) {
+            if (x == 85 && y == 10) {
                 mvaddstr(y, x, "Q/Cntl+C - Quit");
             }
 
