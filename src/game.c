@@ -75,9 +75,6 @@ collision_into_t game_check_collision(const game_state_t *state) {
 }
 
 void game_update_ball(game_state_t *state, int *velX, int *velY) {
-
-
-
     collision_into_t collision = game_check_collision(state);
 
     // Обработка коллизии
